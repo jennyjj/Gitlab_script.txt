@@ -1,0 +1,175 @@
+# Support Engineer Take-Home Assessment (GitLab)
+## Jennifer Justh
+## 11/29/23
+
+> I would like to add that I used [ChatGPT](www.chat.openai.com) but did not ask the bot to answer the questions for me.  I asked smaller questions in order to arrive at the solution, such as, I asked for the Linux command to get users and home directory but also asked how to extract fields within the output and concatenation the results into a string (for the first question).  I asked similar smaller questions for the other problems.
+
+### 1)	Scripts to get usernames and home dir, and store output in MD5 hash format, running cron jobs hourly to update any changes in the MD5 hash.
+
+A) _First script_
+
+```
+#!/bin/bash
+
+# declare an array to store concatenated data
+concatenated_array=()
+
+# read each line in /etc/passwd file, creating variables for
+# username and homedir and then printing these
+while IFS=: read -r username x userid x x x homedir x; do
+	concatenated_data="$username: $homedir"
+	# append each element to the concatenated_array
+	concatenated_array+=("$concatenated_data")
+done < /etc/passwd
+
+# loop through the array and print elements
+for entry in “$concatenated_array[a]”; do
+	echo “$entry”
+done
+```
+
+
+B) _Second script_
+
+```
+#!/bin/bash
+
+# path to the flag file
+flag_file="/home/slowcooker/first_run_flag"
+
+# check if flag file exists
+if [ -e "$flag_file" ]; then
+	# subsequent run
+	echo “This is a subsequent run.”
+
+	current_md5_hash=$(echo -n "$concatenated_string" | md5sum | \
+		awk '{print $1}')
+
+	echo "$current_md5_hash"
+
+	file_path="/home/slowcooker/current_users"
+
+	# check if file exists
+	if [ -e "$file_path" ]; then
+		echo "File path exists!"
+
+		# Read the previous MD5 hash from the file
+		previous_md5_hash=$(<"$file_path")
+
+		echo "$previous_md5_hash"
+
+		# Compare the current and previous MD5 hashes
+		if [ "$current_md5_hash" == "$previous_md5_hash" ]; then
+			echo “MD5 has not changed”
+		else
+			echo “MD5 has changed”
+
+			# add actions for changed hash
+
+			file_path_2="/home/slowcooker/user_changes"
+
+			echo "DATE TIME changes occurred" >> "$file_path_2"
+
+			date_time_pattern="2022-01-01 12:34:56"
+
+			# user grep to fund the old date and time
+			matching_line=$(grep "$date_time_pattern" "$file_path_2")
+
+			echo "$matching_line"
+
+			if [ -e "$matching_line" ]; then
+
+				# user ask to extract the date and time from the
+				# matching line if needed
+				old_date_time=$(echo "$matching_line" | awk \
+					'{print $1, $2}')
+
+				export LC_TIME="en_US.UTF-8"
+
+				new_date_time=$(date "+%Y-%m-%d %H:%M:%S")
+
+				# replace old date and tie with new date and time
+				sed -i 's|$old_date_time|$new_date_time|g' \
+					'$file_path_2'
+			else
+				new_date_time=$(date "+%Y-%m-%d %H:%M:%S")
+				echo "$new_date_time"
+				echo "$file_path_2"
+
+				echo "$new_date_time" >> "$file_path_2"
+			fi
+		fi
+
+
+	else
+		echo 'Previous MD hash file not found.  Assuming first run.'
+
+		file_path='/home/slowcooker/current_users'
+
+		# Store the current MD5 hash in the file
+		echo "$current_md5_hash" > "$file_path"
+
+		timestamp=$(date "+%Y-%m-%d %H:%M:%S")
+
+		echo "$timestamp"
+
+		file_path_2="/home/slowcooker/user_changes"
+
+		# Store the timestamp in the file user_changes
+		echo "$timestamp" >> "$file_path_2"
+
+	fi
+
+else
+	# first run
+	echo “This is the first run.”
+
+	flag_directory="/home/slowcooker"
+	flag_file="$flag_directory/first_run_flag"
+
+	# Ensure the directory exists
+	if [ ! -d "$flag_directory" ]; then
+		mkdir -p "$flag_directory"
+	fi
+
+	# Create the flag file
+	touch "$flag_file"
+
+	#calculate output to MD5 hash
+	md5_hash=$(echo -n "$concatenated_string" | md5sum | awk '{print $1}')
+
+	file_path='/home/slowcooker/current_users'
+
+	echo "$md5_hash" > "$file_path"
+
+	timestamp=$(date "+%Y-%m-%d" "%H:%M:%S")
+
+	echo "$timestamp"
+
+	file_path_2="/home/slowcooker/user_changes"
+
+	echo "$timestamp" >> "$file_path_2"
+fi
+
+```
+
+
+C) _For the cron job, I would have the following:_
+
+```
+# open crontab file
+
+crontab -e
+```
+
+```
+# add a line to schedule a script hourly
+0 * * * * script name
+```
+I would name the script, mdhash.sh.
+
+So, I would have this:
+```
+0 * * * * /home/slowcooker/mdhash.sh
+```
+
