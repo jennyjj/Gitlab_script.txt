@@ -2,8 +2,6 @@
 ## Jennifer Justh
 ## 11/29/23
 
-> I would like to add that I used [ChatGPT](www.chat.openai.com) but did not ask the bot to answer the questions for me.  I asked smaller questions in order to arrive at the solution, such as, I asked for the Linux command to get users and home directory but also asked how to extract fields within the output and concatenation the results into a string (for the first question).  I asked similar smaller questions for the other problems.
-
 ### 1)	Scripts to get usernames and home dir, and store output in MD5 hash format, running cron jobs hourly to update any changes in the MD5 hash.
 
 A) _First script_
